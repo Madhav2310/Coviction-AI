@@ -1,0 +1,64 @@
+# Python
+
+__pycache__/
+
+*.pyc
+
+*.pyo
+
+.venv/
+
+venv/
+
+*.egg-info/
+
+
+
+# Environment / secrets
+
+api/.env
+
+.env
+
+
+
+# Uploads (runtime user data)
+
+uploads/*
+
+!uploads/.gitkeep
+
+
+
+# OS
+
+.DS_Store
+
+Thumbs.db
+
+
+
+# IDE
+
+.idea/
+
+.vscode/
+
+*.swp
+
+*.swo
+
+
+
+# Logs
+
+*.log
+
+
+
+# Deployment notes (personal)
+
+predeployment.txt
+
+# Offline transfer dump
+projext.txt
