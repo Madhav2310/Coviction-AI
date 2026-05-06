@@ -1,0 +1,43 @@
+{
+
+  "name": "Coviction",
+
+  "short_name": "Coviction",
+
+  "description": "Demo day companion for VCs — capture, brief, ask",
+
+  "start_url": "/app/",
+
+  "display": "standalone",
+
+  "background_color": "#111111",
+
+  "theme_color": "#111111",
+
+  "orientation": "any",
+
+  "icons": [
+
+    {
+
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%23111111'/><circle cx='96' cy='96' r='60' stroke='%23e4e2dd' stroke-width='4' fill='none'/><path d='M72 96h48M96 72v48' stroke='%23c9a227' stroke-width='4' stroke-linecap='round'/><circle cx='96' cy='96' r='12' fill='%23c9a227'/></svg>",
+
+      "sizes": "192x192",
+
+      "type": "image/svg+xml"
+
+    },
+
+    {
+
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%23111111'/><circle cx='256' cy='256' r='160' stroke='%23e4e2dd' stroke-width='8' fill='none'/><path d='M192 256h128M256 192v128' stroke='%23c9a227' stroke-width='8' stroke-linecap='round'/><circle cx='256' cy='256' r='28' fill='%23c9a227'/></svg>",
+
+      "sizes": "512x512",
+
+      "type": "image/svg+xml"
+
+    }
+
+  ]
+
+}
