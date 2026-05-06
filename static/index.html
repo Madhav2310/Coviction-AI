@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+
+<html lang="en" data-theme="dark">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Coviction — The Second Brain for VCs</title>
+
+<meta name="description" content="Capture raw observations between pitches. Coviction turns messy notes into structured briefs, knowledge graphs, and evolving conviction scores.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300..600&display=swap" rel="stylesheet">
+
+<style>
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+
+  --font-display:'Instrument Serif',Georgia,serif;
+
+  --font-body:'DM Sans','Helvetica Neue',sans-serif;
+
+  --text-xs:clamp(0.75rem,0.7rem + 0.25vw,0.875rem);
+
+  --text-sm:clamp(0.875rem,0.8rem + 0.35vw,1rem);
+
+  --text-base:clamp(1rem,0.95rem + 0.25vw,1.125rem);
+
+  --text-lg:clamp(1.125rem,1rem + 0.75vw,1.5rem);
+
+  --text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.25rem);
+
+  --text-2xl:clamp(2rem,1.2rem + 2.5vw,3.5rem);
+
+  --text-3xl:clamp(2.5rem,1rem + 4vw,5rem);
+
+  --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;
+
+  --space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;
+
+  --space-12:3rem;--space-16:4rem;--space-20:5rem;--space-24:6rem;
+
+  --radius-sm:.375rem;--radius-md:.5rem;--radius-lg:.75rem;--radius-xl:1rem;--radius-full:9999px;
+
+  --transition:180ms cubic-bezier(0.16,1,0.3,1);
+
+  --content-narrow:640px;--content-default:960px;--content-wide:1200px;
+
+}
+
+[data-theme="dark"]{
+
+  --bg:#111010;--surface:#161514;--surface-2:#1c1b19;--surface-3:#222120;
+
+  --border:rgba(255,255,255,0.08);--divider:rgba(255,255,255,0.05);
+
+  --text:#e8e6e1;--text-muted:#888580;--text-faint:#4a4845;--text-inv:#111010;
+
+  --gold:#c9a227;--gold-hover:#e0b830;--gold-dim:rgba(201,162,39,0.12);
+
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.4);--shadow-md:0 4px 16px rgba(0,0,0,0.5);--shadow-lg:0 16px 48px rgba(0,0,0,0.6);
+
+}
+
+[data-theme="light"]{
+
+  --bg:#f8f7f3;--surface:#ffffff;--surface-2:#f4f3ef;--surface-3:#eceae5;
+
+  --border:rgba(0,0,0,0.08);--divider:rgba(0,0,0,0.05);
+
+  --text:#1a1917;--text-muted:#6b6963;--text-faint:#c0bdb8;--text-inv:#ffffff;
+
+  --gold:#9a7a1a;--gold-hover:#7a6015;--gold-dim:rgba(154,122,26,0.1);
+
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.06);--shadow-md:0 4px 16px rgba(0,0,0,0.08);--shadow-lg:0 16px 48px rgba(0,0,0,0.12);
+
+}
+
+html{-webkit-font-smoothing:antialiased}
+
+body{font-family:var(--font-body);font-size:var(--text-base);color:var(--text);background:var(--bg);line-height:1.65;overflow-x:hidden}
+
+a{color:inherit;text-decoration:none;transition:color var(--transition)}
+
+button{cursor:pointer;border:none;background:none;font:inherit;color:inherit}
+
+
+
+/* ═══ NAV ═══ */
+
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:var(--space-4) var(--space-8);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--divider);backdrop-filter:blur(16px);background:rgba(17,16,16,0.8)}
+
+[data-theme="light"] .nav{background:rgba(248,247,243,0.85)}
+
+.nav-logo{display:flex;align-items:center;gap:var(--space-2);font-family:var(--font-display);font-size:1.2rem;letter-spacing:-0.01em}
+
+.nav-logo svg{flex-shrink:0}
+
+.nav-right{display:flex;align-items:center;gap:var(--space-4)}
+
+.nav-link{font-size:var(--text-sm);color:var(--text-muted);transition:color var(--transition)}
+
+.nav-link:hover{color:var(--text)}
+
+.btn-ghost{font-size:var(--text-sm);padding:var(--space-2) var(--space-4);border:1px solid var(--border);border-radius:var(--radius-md);transition:border-color var(--transition),background var(--transition)}
+
+.btn-ghost:hover{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.04)}
+
+[data-theme="light"] .btn-ghost:hover{border-color:rgba(0,0,0,0.2);background:rgba(0,0,0,0.03)}
+
+.theme-toggle{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-md);color:var(--text-muted);transition:color var(--transition),background var(--transition)}
+
+.theme-toggle:hover{color:var(--text);background:var(--gold-dim)}
+
+
+
+/* ═══ HERO ═══ */
+
+.hero{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:calc(var(--space-24) + 60px) var(--space-8) var(--space-24);position:relative;overflow:hidden}
+
+.hero-constellation{position:absolute;inset:0;pointer-events:none}
+
+.hero-dot{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--gold);will-change:transform;animation:float var(--dur,25s) ease-in-out infinite}
+
+.hero-eyebrow{display:inline-flex;align-items:center;gap:var(--space-2);font-size:var(--text-xs);letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);background:var(--gold-dim);padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);border:1px solid rgba(201,162,39,0.2);margin-bottom:var(--space-8)}
+
+.hero h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:400;line-height:1.1;letter-spacing:-0.02em;max-width:18ch;margin:0 auto var(--space-6)}
+
+.hero h1 em{font-style:italic;color:var(--gold)}
+
+.hero-sub{font-size:var(--text-lg);color:var(--text-muted);max-width:50ch;margin:0 auto var(--space-10);font-weight:300}
+
+.hero-ctas{display:flex;align-items:center;gap:var(--space-4);flex-wrap:wrap;justify-content:center}
+
+.btn-primary{display:inline-flex;align-items:center;gap:var(--space-2);background:var(--gold);color:var(--bg);font-size:var(--text-sm);font-weight:500;padding:var(--space-3) var(--space-8);border-radius:var(--radius-md);transition:background var(--transition),transform var(--transition),box-shadow var(--transition)}
+
+.btn-primary:hover{background:var(--gold-hover);transform:translateY(-1px);box-shadow:0 4px 20px rgba(201,162,39,0.3)}
+
+.btn-secondary{font-size:var(--text-sm);color:var(--text-muted);padding:var(--space-3) var(--space-6);border-radius:var(--radius-md);border:1px solid var(--border);transition:color var(--transition),border-color var(--transition)}
+
+.btn-secondary:hover{color:var(--text);border-color:rgba(255,255,255,0.2)}
+
+
+
+/* ═══ SOCIAL PROOF ═══ */
+
+.social-bar{padding:var(--space-6) 0;border-bottom:1px solid var(--divider);overflow:hidden;position:relative}
+
+.social-bar::before,.social-bar::after{content:'';position:absolute;top:0;bottom:0;width:60px;z-index:2;pointer-events:none}
+
+.social-bar::before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
+
+.social-bar::after{right:0;background:linear-gradient(270deg,var(--bg),transparent)}
+
+.social-label{text-align:center;font-size:var(--text-xs);color:var(--text-faint);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:var(--space-3)}
+
+.marquee{display:flex;gap:var(--space-12);will-change:transform;animation:marquee 35s linear infinite;width:max-content}
+
+.marquee-item{font-family:var(--font-display);font-size:var(--text-lg);color:var(--text-faint);white-space:nowrap}
+
+
+
+/* ═══ SECTION SHARED ═══ */
+
+.section{padding:clamp(var(--space-16),8vw,var(--space-24)) var(--space-8)}
+
+.container{max-width:var(--content-default);margin:0 auto}
+
+.container-wide{max-width:var(--content-wide);margin:0 auto}
+
+.section-label{font-size:var(--text-xs);letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:var(--space-4)}
+
+.section-heading{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:400;line-height:1.15;letter-spacing:-0.02em;margin-bottom:var(--space-6)}
+
+.section-sub{font-size:var(--text-base);color:var(--text-muted);max-width:50ch;line-height:1.7}
+
+
+
+/* ═══ HOW IT WORKS TIMELINE ═══ */
+
+.timeline{position:relative;margin-top:var(--space-12)}
+
+.timeline-track{display:flex;gap:0;position:relative}
+
+.timeline-track::before{content:'';position:absolute;top:28px;left:0;right:0;height:2px;background:var(--border)}
+
+.timeline-progress{position:absolute;top:28px;left:0;height:2px;background:var(--gold);width:0;transition:width 1.2s cubic-bezier(0.16,1,0.3,1)}
+
+.timeline-step{flex:1;text-align:center;padding:0 var(--space-3);position:relative;z-index:1;opacity:0;transform:translateY(8px);transition:opacity 0.4s,transform 0.4s}
+
+.timeline-step.active{opacity:1;transform:none}
+
+.step-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:var(--bg);margin:22px auto var(--space-4);transition:border-color 0.4s,background 0.4s,box-shadow 0.4s}
+
+.timeline-step.active .step-dot{border-color:var(--gold);background:var(--gold);box-shadow:0 0 12px rgba(201,162,39,0.4)}
+
+.step-icon{font-size:1.4rem;margin-bottom:var(--space-2)}
+
+.step-title{font-size:var(--text-sm);font-weight:600;margin-bottom:var(--space-1)}
+
+.step-desc{font-size:var(--text-xs);color:var(--text-muted);line-height:1.5;max-width:16ch;margin:0 auto}
+
+
+
+/* ═══ FEATURE ROWS ═══ */
+
+.feature-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-16);align-items:center;padding:clamp(var(--space-12),6vw,var(--space-20)) 0}
+
+.feature-row.reverse{direction:rtl}
+
+.feature-row.reverse>*{direction:ltr}
+
+.feature-content{display:flex;flex-direction:column;gap:var(--space-4)}
+
+.feature-content .section-label{margin-bottom:0}
+
+.feature-content h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:400;line-height:1.2;letter-spacing:-0.01em}
+
+.feature-content p{font-size:var(--text-sm);color:var(--text-muted);line-height:1.7;max-width:40ch}
+
+.feature-visual{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:var(--space-6);position:relative;overflow:hidden;min-height:260px}
+
+
+
+/* Typing cursor */
+
+.typing-cursor{display:inline-block;width:2px;height:1em;background:var(--gold);margin-left:2px;animation:blink-caret 0.8s step-end infinite;vertical-align:text-bottom}
+
+
+
+/* Morph animation */
+
+.morph-container{position:relative;height:220px}
+
+.morph-raw,.morph-structured{position:absolute;inset:0;transition:opacity 0.8s ease,transform 0.8s ease}
+
+.morph-raw{opacity:1;transform:translateY(0)}
+
+.morph-structured{opacity:0;transform:translateY(12px)}
+
+.morph-active .morph-raw{opacity:0;transform:translateY(-12px)}
+
+.morph-active .morph-structured{opacity:1;transform:translateY(0)}
+
+
+
+/* Knowledge graph constellation */
+
+.constellation{position:relative;height:260px}
+
+.const-node{position:absolute;border-radius:50%}
+
+.const-node.large{width:40px;height:40px;background:var(--gold);opacity:0.85;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--bg);font-weight:600}
+
+.const-node.medium{width:24px;height:24px;background:rgba(167,139,250,0.6)}
+
+.const-node.small{width:14px;height:14px;background:rgba(74,158,255,0.5)}
+
+.const-node.tiny{width:7px;height:7px;background:var(--text-faint)}
+
+.const-line{position:absolute;height:1px;background:linear-gradient(90deg,rgba(201,162,39,0.3),transparent);transform-origin:left center}
+
+.const-node.pulse{animation:pulse-node 3s ease-in-out infinite}
+
+
+
+/* Conviction gauge */
+
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;gap:var(--space-4)}
+
+.gauge{width:130px;height:130px;border-radius:50%;background:conic-gradient(var(--gold) 0deg,var(--gold) var(--angle,0deg),var(--border) var(--angle,0deg),var(--border) 360deg);display:flex;align-items:center;justify-content:center;position:relative;transition:--angle 2s cubic-bezier(0.16,1,0.3,1)}
+
+@property --angle{syntax:'<angle>';initial-value:0deg;inherits:false}
+
+.gauge::after{content:'';position:absolute;inset:11px;border-radius:50%;background:var(--surface)}
+
+.gauge-value{position:relative;z-index:1;font-family:var(--font-display);font-size:var(--text-xl);color:var(--gold)}
+
+.gauge-label{font-size:var(--text-xs);color:var(--text-muted);text-align:center}
+
+.decay-bars{display:flex;align-items:flex-end;gap:2px;height:50px;margin-top:var(--space-3)}
+
+.decay-bar{width:7px;background:var(--gold);border-radius:2px 2px 0 0;opacity:0.7}
+
+
+
+/* ═══ PLATFORM TOUR ═══ */
+
+.tour-section{padding:clamp(var(--space-16),8vw,var(--space-24)) var(--space-8)}
+
+.tour-content{max-width:var(--content-wide);margin:0 auto;display:grid;grid-template-columns:260px 1fr;gap:var(--space-10);align-items:start}
+
+.tour-nav{display:flex;flex-direction:column;gap:var(--space-5);position:sticky;top:calc(60px + var(--space-8))}
+
+.tour-step{padding:var(--space-4);border-radius:var(--radius-lg);border:1px solid transparent;transition:border-color 0.3s,background 0.3s;cursor:pointer}
+
+.tour-step:hover{background:var(--surface-2)}
+
+.tour-step.active{border-color:var(--border);background:var(--surface);cursor:default}
+
+.tour-step-num{font-size:11px;color:var(--text-faint);font-weight:600;transition:color 0.3s}
+
+.tour-step.active .tour-step-num{color:var(--gold)}
+
+.tour-step-title{font-size:var(--text-sm);font-weight:500;color:var(--text-faint);margin-top:2px;transition:color 0.3s}
+
+.tour-step.active .tour-step-title{color:var(--text)}
+
+.tour-screen-wrap{position:relative;min-height:420px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-lg)}
+
+.tour-screen{position:absolute;inset:0;padding:var(--space-6);opacity:0;transform:translateY(12px);transition:opacity 0.4s ease,transform 0.4s ease;pointer-events:none}
+
+.tour-screen.active{opacity:1;transform:none;pointer-events:auto}
+
+.tour-screen-bar{display:flex;align-items:center;gap:var(--space-2);padding-bottom:var(--space-4);border-bottom:1px solid var(--divider);margin-bottom:var(--space-4)}
+
+.tour-screen-dot{width:8px;height:8px;border-radius:50%}
+
+
+
+/* ═══ TESTIMONIALS ═══ */
+
+.testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-6);margin-top:var(--space-10)}
+
+.testimonial-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:var(--space-6);transition:transform 0.3s,box-shadow 0.3s}
+
+.testimonial-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+
+.testimonial-quote{font-size:var(--text-sm);color:var(--text);line-height:1.7;margin-bottom:var(--space-5);font-style:italic}
+
+.testimonial-author{display:flex;align-items:center;gap:var(--space-3)}
+
+.testimonial-avatar{width:34px;height:34px;border-radius:50%;background:var(--gold-dim);display:flex;align-items:center;justify-content:center;font-size:var(--text-xs);color:var(--gold);font-weight:600}
+
+.testimonial-name{font-size:var(--text-xs);font-weight:600}
+
+.testimonial-role{font-size:11px;color:var(--text-muted)}
+
+
+
+/* ═══ FAQ ═══ */
+
+.faq-list{margin-top:var(--space-8);max-width:var(--content-narrow);margin-left:auto;margin-right:auto}
+
+.faq-item{border-bottom:1px solid var(--divider)}
+
+.faq-item summary{padding:var(--space-5) 0;font-size:var(--text-sm);font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:space-between;list-style:none;transition:color var(--transition)}
+
+.faq-item summary:hover{color:var(--gold)}
+
+.faq-item summary::-webkit-details-marker{display:none}
+
+.faq-item summary::after{content:'+';font-size:1.2rem;color:var(--text-faint);transition:transform 0.3s}
+
+.faq-item[open] summary::after{transform:rotate(45deg);color:var(--gold)}
+
+.faq-answer{padding:0 0 var(--space-5);font-size:var(--text-sm);color:var(--text-muted);line-height:1.7}
+
+
+
+/* ═══ FINAL CTA ═══ */
+
+.final-cta{padding:clamp(var(--space-16),8vw,var(--space-24)) var(--space-8);text-align:center;background:linear-gradient(180deg,var(--bg) 0%,rgba(201,162,39,0.03) 50%,var(--bg) 100%)}
+
+.final-cta h2{font-family:var(--font-display);font-size:var(--text-2xl);margin-bottom:var(--space-4)}
+
+.final-cta p{color:var(--text-muted);margin-bottom:var(--space-8);font-size:var(--text-base)}
+
+
+
+/* ═══ FOOTER ═══ */
+
+footer{padding:var(--space-8);border-top:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-4)}
+
+.footer-logo{font-family:var(--font-display);font-size:1rem;color:var(--text-muted)}
+
+.footer-links{display:flex;gap:var(--space-6)}
+
+.footer-links a{font-size:var(--text-xs);color:var(--text-faint);transition:color var(--transition)}
+
+.footer-links a:hover{color:var(--text-muted)}
+
+.footer-note{font-size:var(--text-xs);color:var(--text-faint)}
+
+
+
+/* ═══ REVEAL ═══ */
+
+.reveal{opacity:0;transform:translateY(20px);transition:opacity 0.6s ease,transform 0.6s ease}
+
+.reveal.visible{opacity:1;transform:none}
+
+
+
+/* ═══ KEYFRAMES ═══ */
+
+@keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(var(--dx,10px),var(--dy,-10px))}}
+
+@keyframes pulse-node{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+
+@keyframes blink-caret{from,to{opacity:0}50%{opacity:1}}
+
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+
+
+/* ═══ RESPONSIVE ═══ */
+
+@media(max-width:1024px){
+
+  .feature-row{grid-template-columns:1fr;gap:var(--space-8)}
+
+  .feature-row.reverse{direction:ltr}
+
+  .tour-content{grid-template-columns:1fr;gap:var(--space-6)}
+
+  .tour-nav{flex-direction:row;overflow-x:auto;gap:var(--space-3);position:static}
+
+  .tour-screen-wrap{min-height:360px}
+
+  .testimonials-grid{grid-template-columns:1fr 1fr}
+
+}
+
+@media(max-width:640px){
+
+  .nav{padding:var(--space-3) var(--space-4)}
+
+  .nav-link{display:none}
+
+  .hero{padding:calc(var(--space-20) + 60px) var(--space-4) var(--space-16)}
+
+  .hero-ctas{flex-direction:column;width:100%;max-width:280px}
+
+  .btn-primary,.btn-secondary{width:100%;text-align:center;justify-content:center;padding:var(--space-4)}
+
+  .timeline-track{flex-direction:column;align-items:flex-start;gap:var(--space-4)}
+
+  .timeline-track::before{top:0;bottom:0;left:7px;width:2px;height:100%}
+
+  .timeline-progress{top:0;left:7px;width:2px!important;height:0;transition:height 1.2s cubic-bezier(0.16,1,0.3,1)}
+
+  .timeline-step{text-align:left;display:flex;gap:var(--space-3);align-items:flex-start;padding:0}
+
+  .step-dot{margin:0;flex-shrink:0}
+
+  .step-desc{max-width:none}
+
+  .feature-row{grid-template-columns:1fr}
+
+  .testimonials-grid{grid-template-columns:1fr}
+
+  .tour-content{grid-template-columns:1fr}
+
+  .tour-nav{flex-direction:row;gap:var(--space-3);position:static}
+
+  .tour-screen-wrap{min-height:300px}
+
+  footer{justify-content:center;text-align:center;flex-direction:column}
+
+}
+
+@media(prefers-reduced-motion:reduce){
+
+  .reveal{opacity:1;transform:none;transition:none}
+
+  .hero-dot,.const-node.pulse,.marquee{animation:none!important}
+
+  .gauge{transition:none}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+
+<header>
+
+  <nav class="nav" role="navigation" aria-label="Main">
+
+    <a href="/" class="nav-logo" aria-label="Coviction home">
+
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+
+        <circle cx="11" cy="11" r="9" stroke="currentColor" stroke-width="1.5"/>
+
+        <path d="M7 11h8M11 7v8" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round"/>
+
+        <circle cx="11" cy="11" r="2" fill="var(--gold)"/>
+
+      </svg>
+
+      Coviction
+
+    </a>
+
+    <div class="nav-right">
+
+      <a href="#how" class="nav-link">How it works</a>
+
+      <a href="#features" class="nav-link">Features</a>
+
+      <a href="#tour" class="nav-link">Tour</a>
+
+      <a href="coviction-app.html" class="btn-ghost">Open App</a>
+
+      <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme">
+
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+
+      </button>
+
+    </div>
+
+  </nav>
+
+</header>
+
+
+
+<main>
+
+  <!-- ═══ HERO ═══ -->
+
+  <section class="hero">
+
+    <div class="hero-constellation" aria-hidden="true"></div>
+
+    <div class="hero-eyebrow">The Second Brain for VCs</div>
+
+    <h1>Every pitch remembered.<br>Every thesis <em>tracked</em></h1>
+
+    <p class="hero-sub">
+
+      You hear 40 pitches a week. By Friday you've forgotten the best one.
+
+      Coviction captures everything, connects the dots, and watches your conviction grow.
+
+    </p>
+
+    <div class="hero-ctas">
+
+      <a href="coviction-app.html" class="btn-primary">
+
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+
+        Start capturing
+
+      </a>
+
+      <a href="#how" class="btn-secondary">See how it works</a>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- ═══ SOCIAL PROOF ═══ -->
+
+  <section class="social-bar" aria-label="Trusted by">
+
+    <p class="social-label">Built for investors at</p>
+
+    <div class="marquee" aria-hidden="true">
+
+      <span class="marquee-item">a16z</span>
+
+      <span class="marquee-item">Sequoia</span>
+
+      <span class="marquee-item">First Round</span>
+
+      <span class="marquee-item">Founders Fund</span>
+
+      <span class="marquee-item">Y Combinator</span>
+
+      <span class="marquee-item">Lightspeed</span>
+
+      <span class="marquee-item">Benchmark</span>
+
+      <span class="marquee-item">Index Ventures</span>
+
+      <span class="marquee-item">a16z</span>
+
+      <span class="marquee-item">Sequoia</span>
+
+      <span class="marquee-item">First Round</span>
+
+      <span class="marquee-item">Founders Fund</span>
+
+      <span class="marquee-item">Y Combinator</span>
+
+      <span class="marquee-item">Lightspeed</span>
+
+      <span class="marquee-item">Benchmark</span>
+
+      <span class="marquee-item">Index Ventures</span>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- ═══ HOW IT WORKS ═══ -->
+
+  <section class="section" id="how">
+
+    <div class="container">
+
+      <div class="reveal">
+
+        <p class="section-label">How it works</p>
+
+        <h2 class="section-heading">Five steps. Zero friction.</h2>
+
+        <p class="section-sub">From messy notes scribbled between pitches to an evolving intelligence layer that compounds over time.</p>
+
+      </div>
+
+      <div class="timeline reveal">
+
+        <div class="timeline-track">
+
+          <div class="timeline-progress" id="timeline-progress"></div>
+
+          <div class="timeline-step" data-step="1">
+
+            <div class="step-dot"></div>
+
+            <div class="step-icon">&#9998;</div>
+
+            <div class="step-title">Capture</div>
+
+            <div class="step-desc">Text, voice, or photo. 10 seconds.</div>
+
+          </div>
+
+          <div class="timeline-step" data-step="2">
+
+            <div class="step-dot"></div>
+
+            <div class="step-icon">&#10024;</div>
+
+            <div class="step-title">Extract</div>
+
+            <div class="step-desc">AI finds companies, people, and metrics.</div>
+
+          </div>
+
+          <div class="timeline-step" data-step="3">
+
+            <div class="step-dot"></div>
+
+            <div class="step-icon">&#9889;</div>
+
+            <div class="step-title">Synthesize</div>
+
+            <div class="step-desc">One tap turns chaos into a structured brief.</div>
+
+          </div>
+
+          <div class="timeline-step" data-step="4">
+
+            <div class="step-dot"></div>
+
+            <div class="step-icon">&#127760;</div>
+
+            <div class="step-title">Connect</div>
+
+            <div class="step-desc">Entities form a knowledge graph automatically.</div>
+
+          </div>
+
+          <div class="timeline-step" data-step="5">
+
+            <div class="step-dot"></div>
+
+            <div class="step-icon">&#128270;</div>
+
+            <div class="step-title">Recall</div>
+
+            <div class="step-desc">Ask anything. Context-aware search.</div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- ═══ FEATURES ═══ -->
+
+  <section class="section" id="features">
+
+    <div class="container-wide">
+
+
+
+      <!-- Feature 1: Quick Capture — the INPUT experience -->
+
+      <div class="feature-row">
+
+        <div class="feature-content reveal">
+
+          <p class="section-label">Quick Capture</p>
+
+          <h3>90 seconds between founders.<br>No friction.</h3>
+
+          <p>Title, raw thought, sector tag. Done. Like texting yourself &mdash; except it becomes intelligence. Supports voice memos and slide photos that auto-transcribe.</p>
+
+        </div>
+
+        <div class="feature-visual reveal">
+
+          <div style="font-size:11px;color:var(--text-faint);margin-bottom:var(--space-3);text-transform:uppercase;letter-spacing:0.08em">New observation</div>
+
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4);margin-bottom:var(--space-3)">
+
+            <div style="font-size:var(--text-sm);font-weight:500;margin-bottom:var(--space-2)">Lattice Bio &mdash; precision oncology platform</div>
+
+            <div style="font-size:var(--text-xs);color:var(--text-muted)" id="typing-target">Phase 2 results ahead of schedule. $8M ARR, 140% NRR. CEO ex-Illumina.<span class="typing-cursor"></span></div>
+
+          </div>
+
+          <div style="display:flex;gap:var(--space-2)">
+
+            <span style="font-size:10px;padding:2px 8px;border-radius:var(--radius-full);background:rgba(34,211,238,0.12);color:#22d3ee">Health</span>
+
+            <span style="font-size:10px;padding:2px 8px;border-radius:var(--radius-full);background:rgba(167,139,250,0.12);color:#a78bfa">Biotech</span>
+
+          </div>
+
+          <div style="margin-top:var(--space-4);padding-top:var(--space-3);border-top:1px solid var(--divider);font-size:10px;color:var(--text-faint);display:flex;align-items:center;gap:var(--space-2)">
+
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+
+            Voice memo attached &mdash; 0:42
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- Feature 2: AI Briefs — the SYNTHESIS experience -->
+
+      <div class="feature-row reverse">
+
+        <div class="feature-content reveal">
+
+          <p class="section-label">AI Briefs</p>
+
+          <h3>End-of-day clarity.<br>Instant.</h3>
+
+          <p>After a batch of rapid notes, one tap synthesizes them into themes, standout signals, and concrete follow-ups. Share with partners or keep for your own review.</p>
+
+        </div>
+
+        <div class="feature-visual reveal">
+
+          <div class="morph-container" id="morph-container">
+
+            <div class="morph-raw">
+
+              <div style="font-size:11px;color:var(--text-faint);margin-bottom:var(--space-3)">5 RAW NOTES &mdash; JP Morgan Health conf</div>
+
+              <div style="font-size:var(--text-xs);color:var(--text-muted);line-height:2">
+
+                <div style="padding:var(--space-1) 0;border-bottom:1px solid var(--divider)">&#8226; Lattice Bio &mdash; precision oncology, $8M ARR</div>
+
+                <div style="padding:var(--space-1) 0;border-bottom:1px solid var(--divider)">&#8226; NovaCare &mdash; remote patient monitoring, seed</div>
+
+                <div style="padding:var(--space-1) 0;border-bottom:1px solid var(--divider)">&#8226; NeuroLink diagnostics &mdash; brain-computer interface</div>
+
+                <div style="padding:var(--space-1) 0;border-bottom:1px solid var(--divider)">&#8226; Funding climate for digital health cooling</div>
+
+                <div style="padding:var(--space-1) 0">&#8226; Panel: "The AI-native clinic" &mdash; 3 promising angles</div>
+
+              </div>
+
+            </div>
+
+            <div class="morph-structured">
+
+              <div style="font-size:11px;color:var(--gold);margin-bottom:var(--space-3);font-weight:600">&#10003; BRIEF GENERATED</div>
+
+              <div style="font-size:var(--text-xs);line-height:1.8">
+
+                <div style="color:var(--text);font-weight:500;margin-bottom:var(--space-1)">Themes</div>
+
+                <div style="color:var(--text-muted);margin-bottom:var(--space-3)">Precision medicine &bull; Remote monitoring &bull; AI-native care delivery</div>
+
+                <div style="color:var(--text);font-weight:500;margin-bottom:var(--space-1)">Standout</div>
+
+                <div style="color:var(--text-muted);margin-bottom:var(--space-3)">Lattice Bio &mdash; 140% NRR + Phase 2 results. Schedule deep-dive.</div>
+
+                <div style="color:var(--text);font-weight:500;margin-bottom:var(--space-1)">Follow-ups</div>
+
+                <div style="color:var(--gold)">&#10003; Intro to NovaCare CEO via James K.</div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- Feature 3: Knowledge Graph — the CONNECTIONS experience -->
+
+      <div class="feature-row">
+
+        <div class="feature-content reveal">
+
+          <p class="section-label">Knowledge Graph</p>
+
+          <h3>See connections<br>you'd never spot alone.</h3>
+
+          <p>Every entity you mention becomes a node. Co-occurring mentions form edges. Over weeks, patterns emerge &mdash; a thesis you didn't know you were forming becomes visible in the topology.</p>
+
+          <a href="coviction-memory.html" style="font-size:var(--text-xs);color:var(--gold);display:inline-flex;align-items:center;gap:var(--space-2);margin-top:var(--space-2)">
+
+            Explore the Memory Map
+
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+
+          </a>
+
+        </div>
+
+        <div class="feature-visual reveal">
+
+          <div class="constellation">
+
+            <div class="const-node large pulse" style="top:38%;left:38%">Infra</div>
+
+            <div class="const-node medium pulse" style="top:18%;left:62%;animation-delay:0.5s"></div>
+
+            <div class="const-node medium pulse" style="top:65%;left:22%;animation-delay:1s"></div>
+
+            <div class="const-node small" style="top:72%;left:58%"></div>
+
+            <div class="const-node small" style="top:12%;left:28%"></div>
+
+            <div class="const-node tiny" style="top:50%;left:78%"></div>
+
+            <div class="const-node tiny" style="top:82%;left:42%"></div>
+
+            <div class="const-line" style="top:42%;left:44%;width:80px;transform:rotate(-25deg)"></div>
+
+            <div class="const-line" style="top:40%;left:42%;width:60px;transform:rotate(40deg)"></div>
+
+            <div class="const-line" style="top:58%;left:28%;width:85px;transform:rotate(-10deg)"></div>
+
+            <div class="const-line" style="top:45%;left:46%;width:95px;transform:rotate(18deg)"></div>
+
+          </div>
+
+          <div style="position:absolute;bottom:var(--space-4);left:var(--space-5);font-size:10px;color:var(--text-faint);display:flex;gap:var(--space-3)">
+
+            <span style="color:var(--gold)">&#9679; Themes</span>
+
+            <span style="color:#a78bfa">&#9679; People</span>
+
+            <span style="color:#4a9eff">&#9679; Companies</span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- Feature 4: Conviction Engine — the SIGNAL TRACKING experience -->
+
+      <div class="feature-row reverse">
+
+        <div class="feature-content reveal">
+
+          <p class="section-label">Conviction Engine</p>
+
+          <h3>Track belief,<br>not just information.</h3>
+
+          <p>Every mention is a signal. Repeated signals compound. Silence causes decay. The result: a living metric that reflects how actively you're tracking something &mdash; with a full audit trail.</p>
+
+        </div>
+
+        <div class="feature-visual reveal">
+
+          <div class="gauge-wrap">
+
+            <div class="gauge" id="conviction-gauge">
+
+              <span class="gauge-value">72%</span>
+
+            </div>
+
+            <div class="gauge-label">Precision medicine &mdash; thesis conviction</div>
+
+            <div class="decay-bars">
+
+              <div class="decay-bar" style="height:20%"></div>
+
+              <div class="decay-bar" style="height:30%"></div>
+
+              <div class="decay-bar" style="height:35%"></div>
+
+              <div class="decay-bar" style="height:45%"></div>
+
+              <div class="decay-bar" style="height:42%"></div>
+
+              <div class="decay-bar" style="height:55%"></div>
+
+              <div class="decay-bar" style="height:62%"></div>
+
+              <div class="decay-bar" style="height:58%"></div>
+
+              <div class="decay-bar" style="height:68%"></div>
+
+              <div class="decay-bar" style="height:72%"></div>
+
+            </div>
+
+            <div style="font-size:10px;color:var(--text-faint);margin-top:var(--space-2)">10-week signal accumulation</div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Feature 5: Action Items — the FOLLOW-UP experience -->
+
+      <div class="feature-row">
+
+        <div class="feature-content reveal">
+
+          <p class="section-label">Action Tracker</p>
+
+          <h3>Every pitch ends with<br>a clear next step.</h3>
+
+          <p>AI briefs don't just summarize &mdash; they generate actionable follow-ups. Check them off as you go. Never lose momentum between "that was interesting" and actually doing something about it.</p>
+
+        </div>
+
+        <div class="feature-visual reveal">
+
+          <div style="font-size:11px;color:var(--text-faint);margin-bottom:var(--space-3);text-transform:uppercase;letter-spacing:0.08em">Follow-ups &mdash; YC W26 Demo Day</div>
+
+          <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+
+            <label style="display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-3);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);cursor:pointer">
+
+              <input type="checkbox" checked disabled style="accent-color:var(--gold);margin-top:2px;width:16px;height:16px;flex-shrink:0">
+
+              <div>
+
+                <div style="font-size:var(--text-xs);text-decoration:line-through;color:var(--text-faint)">Schedule deep-dive with Meridian founders</div>
+
+                <div style="font-size:10px;color:var(--text-faint);margin-top:2px">Completed 2 days ago</div>
+
+              </div>
+
+            </label>
+
+            <label style="display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-3);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);cursor:pointer">
+
+              <input type="checkbox" checked disabled style="accent-color:var(--gold);margin-top:2px;width:16px;height:16px;flex-shrink:0">
+
+              <div>
+
+                <div style="font-size:var(--text-xs);text-decoration:line-through;color:var(--text-faint)">Reference call: Maersk on prediction accuracy</div>
+
+                <div style="font-size:10px;color:var(--text-faint);margin-top:2px">Completed yesterday</div>
+
+              </div>
+
+            </label>
+
+            <label style="display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-3);background:var(--gold-dim);border:1px solid rgba(201,162,39,0.25);border-radius:var(--radius-md);cursor:pointer">
+
+              <input type="checkbox" disabled style="accent-color:var(--gold);margin-top:2px;width:16px;height:16px;flex-shrink:0">
+
+              <div>
+
+                <div style="font-size:var(--text-xs);color:var(--text)">Compare Trellis vs Snyk enterprise motion</div>
+
+                <div style="font-size:10px;color:var(--gold);margin-top:2px">Due today &mdash; from brief</div>
+
+              </div>
+
+            </label>
+
+            <label style="display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-3);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);cursor:pointer">
+
+              <input type="checkbox" disabled style="accent-color:var(--gold);margin-top:2px;width:16px;height:16px;flex-shrink:0">
+
+              <div>
+
+                <div style="font-size:var(--text-xs);color:var(--text)">Intro to Canopy Finance CEO via LP network</div>
+
+                <div style="font-size:10px;color:var(--text-muted);margin-top:2px">Added manually</div>
+
+              </div>
+
+            </label>
+
+          </div>
+
+          <div style="margin-top:var(--space-4);padding-top:var(--space-3);border-top:1px solid var(--divider);display:flex;justify-content:space-between;align-items:center">
+
+            <span style="font-size:10px;color:var(--text-faint)">2 of 4 completed</span>
+
+            <span style="font-size:10px;padding:2px 8px;border-radius:var(--radius-full);background:var(--gold-dim);color:var(--gold)">50%</span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+    </div>
+
+  </section>
+
+
+
+  <!-- ═══ PLATFORM TOUR ═══ -->
+
+  <section class="tour-section" id="tour">
+
+    <div class="tour-content">
+
+        <div class="tour-nav">
+
+          <p class="section-label" style="margin-bottom:var(--space-3)">Platform Tour</p>
+
+          <div class="tour-step active" data-tour="1">
+
+            <div class="tour-step-num">01</div>
+
+            <div class="tour-step-title">Morning: Demo Day capture</div>
+
+          </div>
+
+          <div class="tour-step" data-tour="2">
+
+            <div class="tour-step-num">02</div>
+
+            <div class="tour-step-title">Evening: AI generates your brief</div>
+
+          </div>
+
+          <div class="tour-step" data-tour="3">
+
+            <div class="tour-step-num">03</div>
+
+            <div class="tour-step-title">Week 3: Pattern emerges</div>
+
+          </div>
+
+        </div>
+
+        <div class="tour-screen-wrap">
+
+          <!-- Screen 1: Capture during demo day -->
+
+          <div class="tour-screen active" data-screen="1">
+
+            <div class="tour-screen-bar">
+
+              <div class="tour-screen-dot" style="background:#28c840"></div>
+
+              <span style="font-size:11px;color:var(--text-faint)">10:47 AM &mdash; YC W26 Demo Day</span>
+
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+
+              <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4)">
+
+                <div style="font-size:var(--text-sm);font-weight:500">Meridian &mdash; supply chain ML</div>
+
+                <div style="font-size:var(--text-xs);color:var(--text-muted);margin-top:2px">Predicts disruptions 72hrs ahead. $1.2M pilot with Maersk.</div>
+
+              </div>
+
+              <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4)">
+
+                <div style="font-size:var(--text-sm);font-weight:500">Trellis &mdash; developer security</div>
+
+                <div style="font-size:var(--text-xs);color:var(--text-muted);margin-top:2px">SAST meets AI. 4x faster than Snyk for enterprise codebases.</div>
+
+              </div>
+
+              <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4)">
+
+                <div style="font-size:var(--text-sm);font-weight:500">Canopy Finance &mdash; embedded lending</div>
+
+                <div style="font-size:var(--text-xs);color:var(--text-muted);margin-top:2px">API-first credit underwriting. 3 banks signed.</div>
+
+              </div>
+
+              <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4);opacity:0.4">
+
+                <div style="font-size:var(--text-xs);color:var(--text-faint)">+ 4 more captured today...</div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Screen 2: Brief generated -->
+
+          <div class="tour-screen" data-screen="2">
+
+            <div class="tour-screen-bar">
+
+              <div class="tour-screen-dot" style="background:var(--gold)"></div>
+
+              <span style="font-size:11px;color:var(--text-faint)">7:12 PM &mdash; Brief ready</span>
+
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+
+              <div>
+
+                <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:var(--space-2)">YC W26 Demo Day Brief</div>
+
+                <div style="font-size:var(--text-xs);color:var(--text);line-height:1.7">7 companies captured. Strongest cohort in developer tools and applied ML. Two potential Series A leads identified.</div>
+
+              </div>
+
+              <div style="border-top:1px solid var(--divider);padding-top:var(--space-3)">
+
+                <div style="font-size:11px;color:var(--text-muted);margin-bottom:var(--space-2)">TOP SIGNAL</div>
+
+                <div style="font-size:var(--text-xs);color:var(--text)">Meridian (supply chain ML) &mdash; technical depth + live enterprise revenue. Rare combo at demo day stage.</div>
+
+              </div>
+
+              <div style="border-top:1px solid var(--divider);padding-top:var(--space-3)">
+
+                <div style="font-size:11px;color:var(--text-muted);margin-bottom:var(--space-2)">FOLLOW-UPS</div>
+
+                <div style="font-size:var(--text-xs);color:var(--text-muted);line-height:1.8">
+
+                  &#9744; Schedule deep-dive with Meridian founders<br>
+
+                  &#9744; Reference call: Maersk on prediction accuracy<br>
+
+                  &#9744; Compare Trellis vs Snyk enterprise motion
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Screen 3: Pattern emerges -->
+
+          <div class="tour-screen" data-screen="3">
+
+            <div class="tour-screen-bar">
+
+              <div class="tour-screen-dot" style="background:#a78bfa"></div>
+
+              <span style="font-size:11px;color:var(--text-faint)">Week 3 &mdash; Thesis forming</span>
+
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+
+              <div style="padding:var(--space-3);background:var(--gold-dim);border:1px solid rgba(201,162,39,0.2);border-radius:var(--radius-lg)">
+
+                <div style="font-size:11px;color:var(--gold);font-weight:600;margin-bottom:4px">EMERGING THESIS DETECTED</div>
+
+                <div style="font-size:var(--text-xs);color:var(--text)">"Applied ML in logistics" &mdash; 4 companies, 3 positive signals, conviction rising to 64%</div>
+
+              </div>
+
+              <div style="font-size:var(--text-xs);color:var(--text-muted);line-height:1.8">
+
+                <div style="font-weight:500;color:var(--text);margin-bottom:var(--space-2)">Connected entities</div>
+
+                Meridian (supply chain ML) &bull; RouteIQ (last mile) &bull; CargoSense (IoT) &bull; Priya Raman (LP at logistics fund)
+
+              </div>
+
+              <div style="font-size:var(--text-xs);color:var(--text-faint);padding-top:var(--space-3);border-top:1px solid var(--divider)">
+
+                3 weeks ago this was scattered notes across 4 sessions. Now it's a conviction with receipts.
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- ═══ TESTIMONIALS ═══ -->
+
+  <section class="section">
+
+    <div class="container">
+
+      <div class="reveal">
+
+        <p class="section-label">What VCs say</p>
+
+        <h2 class="section-heading">Built by investors,<br>for investors.</h2>
+
+      </div>
+
+      <div class="testimonials-grid">
+
+        <div class="testimonial-card reveal">
+
+          <div class="testimonial-quote">"Fifteen pitches in three hours. By dinner I remembered every one. The knowledge graph showed me a thesis I didn't know I was forming."</div>
+
+          <div class="testimonial-author">
+
+            <div class="testimonial-avatar">SC</div>
+
+            <div>
+
+              <div class="testimonial-name">Sarah Chen</div>
+
+              <div class="testimonial-role">Partner, Horizon Ventures</div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="testimonial-card reveal">
+
+          <div class="testimonial-quote">"The conviction score changed how our Monday partner meeting works. We can see which deals have sustained signal vs. one-time excitement."</div>
+
+          <div class="testimonial-author">
+
+            <div class="testimonial-avatar">MW</div>
+
+            <div>
+
+              <div class="testimonial-name">Marcus Webb</div>
+
+              <div class="testimonial-role">GP, Seed Stage Capital</div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="testimonial-card reveal">
+
+          <div class="testimonial-quote">"I generate a deal memo in 10 seconds that used to take me an hour of re-reading notes. The audit trail of how my thinking evolved is invaluable."</div>
+
+          <div class="testimonial-author">
+
+            <div class="testimonial-avatar">PS</div>
+
+            <div>
+
+              <div class="testimonial-name">Priya Sharma</div>
+
+              <div class="testimonial-role">Principal, Climate Capital</div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- ═══ FAQ ═══ -->
+
+  <section class="section">
+
+    <div class="container">
+
+      <div class="reveal">
+
+        <p class="section-label">FAQ</p>
+
+        <h2 class="section-heading">Questions answered.</h2>
+
+      </div>
+
+      <div class="faq-list">
+
+        <details class="faq-item reveal">
+
+          <summary>How is this different from Notion or Evernote?</summary>
+
+          <div class="faq-answer">Those are generic note-taking tools. Coviction is purpose-built for the VC workflow: automatic entity extraction, thesis tracking, conviction scores, knowledge graphs, and AI briefs that understand the difference between a company, a metric, and a sector trend.</div>
+
+        </details>
+
+        <details class="faq-item reveal">
+
+          <summary>What AI models power the analysis?</summary>
+
+          <div class="faq-answer">We use frontier LLMs (GPT-4o, Claude) for entity extraction, brief synthesis, and deal memo generation. Your notes are processed in an encrypted environment and never used for model training.</div>
+
+        </details>
+
+        <details class="faq-item reveal">
+
+          <summary>Can I use this during live meetings?</summary>
+
+          <div class="faq-answer">Yes. The capture interface is designed for speed &mdash; title, body, sector tag, done in 10 seconds. Voice memos let you dictate between conversations. Image capture snaps slides and auto-transcribes.</div>
+
+        </details>
+
+        <details class="faq-item reveal">
+
+          <summary>How does the conviction score work?</summary>
+
+          <div class="faq-answer">Every mention of a company or thesis is a signal. Positive signals compound the score; silence causes gradual decay (30-day half-life). The result is a living metric showing how actively you're tracking something, with a full audit trail.</div>
+
+        </details>
+
+        <details class="faq-item reveal">
+
+          <summary>Is my data private?</summary>
+
+          <div class="faq-answer">Completely. Each user's data is isolated. All data is encrypted at rest and in transit. We never share observation content with other users or use it for model training. Your investment intelligence is yours alone.</div>
+
+        </details>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- ═══ FINAL CTA ═══ -->
+
+  <section class="final-cta">
+
+    <div class="container reveal">
+
+      <h2>Stop losing signal.<br>Start building <em style="color:var(--gold);font-style:italic">conviction</em>.</h2>
+
+      <p>Join the VCs who never forget a pitch again.</p>
+
+      <a href="coviction-app.html" class="btn-primary" style="font-size:var(--text-base);padding:var(--space-4) var(--space-10)">
+
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+
+        Start capturing free
+
+      </a>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+
+<footer>
+
+  <span class="footer-logo">Coviction</span>
+
+  <div class="footer-links">
+
+    <a href="#how">How it works</a>
+
+    <a href="#features">Features</a>
+
+    <a href="#tour">Tour</a>
+
+  </div>
+
+  <span class="footer-note">&copy; 2026 Coviction. Built for investors.</span>
+
+</footer>
+
+
+
+<script>
+
+(function(){
+
+  // ── Theme toggle ──
+
+  const toggle=document.querySelector('[data-theme-toggle]');
+
+  const root=document.documentElement;
+
+  let theme=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+
+  root.dataset.theme=theme;
+
+  if(toggle)toggle.onclick=()=>{
+
+    theme=theme==='dark'?'light':'dark';
+
+    root.dataset.theme=theme;
+
+    toggle.innerHTML=theme==='dark'
+
+      ?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+
+      :'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';
+
+  };
+
+
+
+  // ── Hero constellation (8 lightweight dots, GPU composited) ──
+
+  const heroConst=document.querySelector('.hero-constellation');
+
+  if(heroConst){
+
+    for(let i=0;i<8;i++){
+
+      const d=document.createElement('div');
+
+      d.className='hero-dot';
+
+      d.style.cssText=`left:${10+Math.random()*80}%;top:${10+Math.random()*80}%;--dur:${22+Math.random()*18}s;--dx:${-15+Math.random()*30}px;--dy:${-15+Math.random()*30}px;opacity:${0.15+Math.random()*0.2};animation-delay:${-Math.random()*20}s`;
+
+      heroConst.appendChild(d);
+
+    }
+
+  }
+
+
+
+  // ── Reveal observer (single instance, no stagger delay) ──
+
+  const io=new IntersectionObserver(entries=>{
+
+    for(const e of entries){
+
+      if(e.isIntersecting){
+
+        e.target.classList.add('visible');
+
+        io.unobserve(e.target);
+
+      }
+
+    }
+
+  },{threshold:0.15,rootMargin:'0px 0px -30px 0px'});
+
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+
+
+  // ── Timeline activation ──
+
+  let timelineActivated=false;
+
+  const timelineSteps=document.querySelectorAll('.timeline-step');
+
+  const timelineProgress=document.getElementById('timeline-progress');
+
+  const timelineIO=new IntersectionObserver(entries=>{
+
+    for(const e of entries){
+
+      if(e.isIntersecting&&!timelineActivated){
+
+        timelineActivated=true;
+
+        let delay=0;
+
+        timelineSteps.forEach((step,i)=>{
+
+          setTimeout(()=>{
+
+            step.classList.add('active');
+
+            const pct=((i+1)/timelineSteps.length)*100;
+
+            const mobile=innerWidth<=640;
+
+            timelineProgress.style[mobile?'height':'width']=pct+'%';
+
+          },delay);
+
+          delay+=350;
+
+        });
+
+        timelineIO.unobserve(e.target);
+
+      }
+
+    }
+
+  },{threshold:0.3});
+
+  const tl=document.querySelector('.timeline');
+
+  if(tl)timelineIO.observe(tl);
+
+
+
+  // ── Brief morph animation ──
+
+  const morph=document.getElementById('morph-container');
+
+  if(morph){
+
+    const mIO=new IntersectionObserver(entries=>{
+
+      for(const e of entries){
+
+        if(e.isIntersecting){
+
+          setTimeout(()=>morph.classList.add('morph-active'),1000);
+
+          mIO.unobserve(e.target);
+
+        }
+
+      }
+
+    },{threshold:0.4});
+
+    mIO.observe(morph);
+
+  }
+
+
+
+  // ── Conviction gauge ──
+
+  const gauge=document.getElementById('conviction-gauge');
+
+  if(gauge){
+
+    const gIO=new IntersectionObserver(entries=>{
+
+      for(const e of entries){
+
+        if(e.isIntersecting){
+
+          gauge.style.setProperty('--angle','259deg');// 72% of 360
+
+          gIO.unobserve(e.target);
+
+        }
+
+      }
+
+    },{threshold:0.4});
+
+    gIO.observe(gauge);
+
+  }
+
+
+
+  // ── Tour: click-based interactive ──
+
+  const tourSteps=document.querySelectorAll('.tour-step');
+
+  const tourScreens=document.querySelectorAll('.tour-screen');
+
+  tourSteps.forEach(step=>{
+
+    step.addEventListener('click',()=>{
+
+      const id=step.dataset.tour;
+
+      tourSteps.forEach(s=>s.classList.toggle('active',s.dataset.tour===id));
+
+      tourScreens.forEach(s=>s.classList.toggle('active',s.dataset.screen===id));
+
+    });
+
+  });
+
+
+
+  // ── Nav highlight on scroll (lightweight, rAF-throttled) ──
+
+  const sections=document.querySelectorAll('section[id]');
+
+  const navLinks=document.querySelectorAll('.nav-link[href^="#"]');
+
+  let ticking=false;
+
+  function onScroll(){
+
+    if(ticking)return;
+
+    ticking=true;
+
+    requestAnimationFrame(()=>{
+
+      const y=scrollY+120;
+
+      let activeId='';
+
+      sections.forEach(s=>{
+
+        if(y>=s.offsetTop&&y<s.offsetTop+s.offsetHeight)activeId=s.id;
+
+      });
+
+      navLinks.forEach(l=>{
+
+        l.style.color=l.getAttribute('href')==='#'+activeId?'var(--text)':'';
+
+      });
+
+      ticking=false;
+
+    });
+
+  }
+
+  addEventListener('scroll',onScroll,{passive:true});
+
+})();
+
+</script>
+
+</body>
+
+</html>
