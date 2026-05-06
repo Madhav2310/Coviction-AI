@@ -39,6 +39,8 @@ class Settings(BaseSettings):
         description="Async Postgres connection string"
 
     )
+    db_pool_size: int = Field(default=3, description="Base Postgres connection pool size")
+    db_max_overflow: int = Field(default=2, description="Temporary overflow DB connections")
 
 
 
