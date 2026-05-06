@@ -1,519 +1,387 @@
-# Coviction
+<p align="center">
 
+  <img src="https://img.shields.io/badge/Python-3.12+-3776AB?style=flat-square&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/FastAPI-0.111-009688?style=flat-square&logo=fastapi&logoColor=white" />
+  <img src="https://img.shields.io/badge/PostgreSQL-16-336791?style=flat-square&logo=postgresql&logoColor=white" />
+  <img src="https://img.shields.io/badge/LLM-GPT--4o-412991?style=flat-square&logo=openai&logoColor=white" />
+  <img src="https://img.shields.io/badge/Architecture-Agentic-FF6F00?style=flat-square" />
+</p>
 
-
-**The Second Brain for VCs.**
-
-
-
-Coviction is a purpose-built companion for venture capitalists attending demo days, partner meetings, and sourcing events. Capture messy observations between pitches, generate structured AI briefs, build a knowledge graph of every entity you encounter, and watch conviction scores evolve over time.
-
-
-
----
-
-
-
-## What it does
-
-
-
-| Feature | Description |
-
-|---------|-------------|
-
-| **Quick Capture** | Title + notes + sector tag in 10 seconds. Supports voice memos and image capture. |
-
-| **AI Briefs** | One-tap synthesis of raw notes into themes, standout signals, and follow-up actions. |
-
-| **Action Tracker** | Auto-generated follow-ups from briefs + manual additions. Check them off as you go. |
-
-| **Knowledge Graph** | Entities (companies, people, concepts, metrics) auto-extracted and linked via co-occurrence. |
-
-| **Conviction Engine** | Living belief scores that compound on signal and decay on silence. Full audit trail. |
-
-| **Deal Memos** | One-click AI-generated memo for any entity using all available context. |
-
-| **Context Search** | Full-text search across all observations, transcripts, and image summaries. |
-
-| **Morning Brief** | Daily heartbeat: new entities, rising convictions, suggested actions. |
-
-
+<h1 align="center">Coviction</h1>
+<p align="center"><strong>Agentic second brain for venture capital.</strong></p>
+<p align="center">
+  <em>Capture raw signal between pitches. Let autonomous AI agents extract entities, build a living knowledge graph, compute evolving conviction scores, and synthesize institutional-grade deal memos — all in real time.</em>
+</p>
 
 ---
 
+## Why Coviction Exists
 
+VCs attend 200+ pitches a year but retain maybe 30% of what they hear. Notes rot in Apple Notes. Conviction fades without reinforcement. Pattern recognition stays locked in your head instead of compounding in a system.
 
-## Architecture
-
-
-
-```
-
-coviction/
-
-├── api/                    # FastAPI backend (async)
-
-│   ├── main.py             # Entry point + static file serving
-
-│   ├── core/
-
-│   │   ├── config.py       # Pydantic settings (all env vars)
-
-│   │   └── model_client.py # Unified LLM client (OpenAI SDK + instructor)
-
-│   ├── db/
-
-│   │   └── postgres.py     # SQLAlchemy 2.0 async engine
-
-│   ├── models/
-
-│   │   └── tables.py       # All database models (7 tables)
-
-│   ├── routers/
-
-│   │   ├── sessions.py     # Sessions + observations CRUD
-
-│   │   ├── brief.py        # Daily brief generation (LLM)
-
-│   │   ├── ask.py          # Context-aware chat (LLM)
-
-│   │   ├── search.py       # Full-text search (Postgres GIN)
-
-│   │   ├── entities.py     # Entity CRUD + extraction trigger
-
-│   │   ├── convictions.py  # Conviction scoring + audit trail
-
-│   │   ├── graph.py        # Knowledge graph + timeline + deal memos
-
-│   │   ├── export.py       # JSON/CSV export
-
-│   │   └── media.py        # Uploaded file serving
-
-│   ├── services/
-
-│   │   ├── entity_extractor.py  # LLM-powered entity extraction
-
-│   │   ├── conviction_engine.py # Score computation + decay
-
-│   │   └── heartbeat.py         # Morning brief + pattern detection
-
-│   └── requirements.txt
-
-├── static/                 # Frontend (pure HTML/CSS/JS — no build step)
-
-│   ├── index.html          # Landing page (marketing)
-
-│   ├── coviction-app.html  # Main app (capture + brief + ask + graph)
-
-│   ├── coviction-memory.html # Memory Map (force-directed knowledge graph)
-
-│   ├── manifest.json       # PWA manifest
-
-│   └── sw.js               # Service worker (offline capture)
-
-├── uploads/                # Local image/voice file storage
-
-├── infra/
-
-│   └── init.sql            # Database schema + indexes
-
-└── migrate.sql             # Schema migrations (idempotent)
-
-```
-
-
+**Coviction is an agentic intelligence layer that turns raw observations into structured, queryable institutional memory** — with conviction scores that evolve like a living thesis document.
 
 ---
 
-
-
-## Quick Start
-
-
-
-### Prerequisites
-
-
-
-- Python 3.12+
-
-- PostgreSQL 16+
-
-- An OpenAI-compatible API key
-
-
-
-### 1. Clone and install
-
-
-
-```bash
-
-git clone https://github.com/YOUR_USER/coviction.git
-
-cd coviction
-
-python3 -m venv .venv
-
-source .venv/bin/activate
-
-pip install -r api/requirements.txt
+## System Architecture
 
 ```
-
-
-
-### 2. Start PostgreSQL
-
-
-
-**Docker:**
-
-```bash
-
-docker run -d --name coviction-pg \
-
-  -e POSTGRES_DB=coviction \
-
-  -e POSTGRES_USER=coviction \
-
-  -e POSTGRES_PASSWORD=dev_password \
-
-  -p 5432:5432 \
-
-  postgres:16
-
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           CLIENT LAYER (PWA)                                 │
+│  ┌─────────────┐  ┌──────────────┐  ┌─────────────┐  ┌──────────────────┐ │
+│  │ Quick Capture│  │  AI Chat/Ask │  │Memory Map   │  │  Action Tracker  │ │
+│  │ (10s input) │  │ (RAG agent)  │  │(Force Graph)│  │  (Auto-gen)      │ │
+│  └─────────────┘  └──────────────┘  └─────────────┘  └──────────────────┘ │
+└──────────────────────────────┬──────────────────────────────────────────────┘
+                               │ REST API
+┌──────────────────────────────┼──────────────────────────────────────────────┐
+│                         ORCHESTRATION LAYER                                  │
+│                                                                              │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │                    FastAPI Async Router Mesh                            │ │
+│  │  sessions • brief • ask • search • entities • convictions • graph      │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+│                               │                                              │
+│  ┌────────────────────────────┼────────────────────────────────────────────┐│
+│  │              AUTONOMOUS AGENT SERVICES                                   ││
+│  │                                                                          ││
+│  │  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────┐  ││
+│  │  │ Entity Extractor │  │ Conviction Engine │  │  Heartbeat Agent     │  ││
+│  │  │ Agent            │  │                   │  │                      │  ││
+│  │  │                  │  │ • Bayesian score   │  │ • Pattern detection  │  ││
+│  │  │ • NER extraction │  │   accumulation    │  │ • Morning brief gen  │  ││
+│  │  │ • Sentiment      │  │ • Passive decay   │  │ • Trend surfacing    │  ││
+│  │  │   analysis       │  │   (time-weighted) │  │ • Action generation  │  ││
+│  │  │ • Co-occurrence  │  │ • Audit trail     │  │                      │  ││
+│  │  │   linking        │  │   logging         │  │                      │  ││
+│  │  │ • Structured     │  │                   │  │                      │  ││
+│  │  │   output (inst.) │  │                   │  │                      │  ││
+│  │  └──────────────────┘  └──────────────────┘  └──────────────────────┘  ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+│                               │                                              │
+│  ┌────────────────────────────┼────────────────────────────────────────────┐│
+│  │                    AI INFRASTRUCTURE                                      ││
+│  │                                                                          ││
+│  │  ModelClient (singleton) ─── OpenAI SDK + Instructor (structured gen)   ││
+│  │       │                                                                  ││
+│  │       ├── Structured outputs via Pydantic response models               ││
+│  │       ├── Multi-model routing (strong/fast/embedding)                   ││
+│  │       ├── Custom CA cert bridging for enterprise proxies                ││
+│  │       └── Graceful degradation (core features work without LLM)         ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+└──────────────────────────────┬──────────────────────────────────────────────┘
+                               │
+┌──────────────────────────────┼──────────────────────────────────────────────┐
+│                        DATA LAYER                                             │
+│                                                                              │
+│  PostgreSQL 16 (async via asyncpg)                                           │
+│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌──────────────────────────┐ │
+│  │   Users    │ │  Sessions  │ │Observations│ │  Entities + Mentions     │ │
+│  └────────────┘ └────────────┘ └────────────┘ └──────────────────────────┘ │
+│  ┌────────────┐ ┌────────────┐ ┌──────────────────────────────────────────┐ │
+│  │   Briefs   │ │Convictions │ │  ConvictionLogs (immutable audit trail)  │ │
+│  └────────────┘ └────────────┘ └──────────────────────────────────────────┘ │
+│                                                                              │
+│  Indexes: GIN full-text • B-tree composite • UUID primary keys • JSONB      │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
-
-
-
-**Or local Postgres:**
-
-```bash
-
-createdb coviction
-
-```
-
-
-
-### 3. Configure environment
-
-
-
-```bash
-
-cat > api/.env <<'EOF'
-
-DATABASE_URL=postgresql+asyncpg://coviction:dev_password@localhost:5432/coviction
-
-OPENAI_API_KEY=sk-your-key-here
-
-DEFAULT_STRONG_MODEL=gpt-4o-mini
-
-DEFAULT_FAST_MODEL=gpt-4o-mini
-
-DEBUG=True
-
-EOF
-
-```
-
-
-
-### 4. Run
-
-
-
-```bash
-
-cd api
-
-uvicorn main:app --reload --port 8000
-
-```
-
-
-
-Open http://localhost:8000 — landing page loads. Click "Start capturing" to enter the app.
-
-
-
-Interactive API docs: http://localhost:8000/docs
-
-
 
 ---
 
-
-
-## Environment Variables
-
-
-
-| Variable | Required | Default | Description |
-
-|----------|----------|---------|-------------|
-
-| `DATABASE_URL` | Yes | local Postgres | Async Postgres connection string |
-
-| `OPENAI_API_KEY` | Yes | — | OpenAI API key |
-
-| `OPENAI_BASE_URL` | No | `None` (OpenAI direct) | Override for compatible proxies |
-
-| `DEFAULT_STRONG_MODEL` | No | `gpt-4o-mini` | Model for briefs, ask, deal memos |
-
-| `DEFAULT_FAST_MODEL` | No | `gpt-4o-mini` | Model for entity extraction |
-
-| `DEFAULT_EMBEDDING_MODEL` | No | `text-embedding-3-small` | Embedding model |
-
-| `GENAI_CA_CERT` | No | — | Custom CA cert path (proxy setups) |
-
-| `JWT_SECRET` | No | dev default | **Change in production** |
-
-| `JWT_EXPIRY_HOURS` | No | `72` | Token lifetime |
-
-| `WHISPER_MODEL` | No | `whisper-1` | Audio transcription model |
-
-| `DEBUG` | No | `True` | Debug mode (SQL echo, etc.) |
-
-| `CORS_ORIGINS` | No | `["*"]` | Allowed CORS origins |
-
-
-
----
-
-
-
-## API Endpoints
-
-
-
-| Method | Path | Description |
-
-|--------|------|-------------|
-
-| GET | `/health` | Health check |
-
-| GET | `/sessions/` | List all sessions |
-
-| POST | `/sessions/today/quick` | Get/create today's session |
-
-| PATCH | `/sessions/{id}` | Rename session |
-
-| POST | `/sessions/{id}/observations` | Create observation |
-
-| POST | `/sessions/{id}/observations/media` | Create with voice/image |
-
-| DELETE | `/sessions/{id}/observations/{obs_id}` | Delete observation |
-
-| POST | `/sessions/{id}/daily-brief` | Generate AI brief |
-
-| GET | `/sessions/{id}/daily-brief` | Get latest brief |
-
-| POST | `/ask` | Ask your notes a question |
-
-| GET | `/search?q=...` | Full-text search |
-
-| GET | `/sessions/{id}/export` | Export session (JSON/CSV) |
-
-| GET | `/knowledge/entities` | List extracted entities |
-
-| GET | `/knowledge/convictions` | List conviction theses |
-
-| GET | `/knowledge/convictions/{id}` | Conviction detail + audit trail |
-
-| POST | `/knowledge/convictions` | Create thesis manually |
-
-| PATCH | `/knowledge/convictions/{id}/score` | Adjust conviction score |
-
-| GET | `/knowledge/graph` | Full knowledge graph (nodes + edges) |
-
-| GET | `/knowledge/graph/timeline` | Session activity heatmap data |
-
-| POST | `/knowledge/graph/deal-memo/{entity_id}` | Generate deal memo |
-
-| GET | `/knowledge/morning-brief` | Morning brief + patterns |
-
-| GET | `/media/{obs_id}` | Serve uploaded media |
-
-
-
----
-
-
-
-## GenAI Dependency Map
-
-
-
-All LLM calls route through `api/core/model_client.py` — a single `ModelClient` singleton.
-
-
-
-| Feature | File | Without LLM |
-
-|---------|------|-------------|
-
-| Daily brief generation | `routers/brief.py` | Returns error |
-
-| Ask / chat | `routers/ask.py` | Returns error |
-
-| Entity extraction | `services/entity_extractor.py` | Fails silently, capture still works |
-
-| Voice transcription | `routers/sessions.py` | Falls back to browser Web Speech API |
-
-| Image analysis | `routers/sessions.py` | Falls back to placeholder |
-
-| Deal memo generation | `routers/graph.py` | Returns error message |
-
-| Morning brief | `services/heartbeat.py` | Falls back to counts-only text |
-
-
-
-**Core features that work without LLM**: Observation capture, sessions, search, export, entities CRUD, convictions CRUD, knowledge graph queries, media serving.
-
-
-
----
-
-
-
-## Deployment
-
-
-
-### Compute options
-
-
-
-| Provider | Cost | Notes |
-
-|----------|------|-------|
-
-| **Render** | Free tier or $7/mo | Deploy from Git, auto-SSL |
-
-| **Railway** | $5/mo | Easiest Postgres add-on |
-
-| **Fly.io** | $0-5/mo | Edge deployment |
-
-| **Firebase (Cloud Run)** | Pay-per-use | Good for low traffic |
-
-| **VPS (Hetzner, DigitalOcean)** | $4-6/mo | Full control |
-
-
-
-### Database options
-
-
-
-| Provider | Cost | Notes |
-
-|----------|------|-------|
-
-| **Neon** | Free tier (0.5GB) | Serverless Postgres, generous free |
-
-| **Supabase** | Free tier (500MB) | Postgres + extras |
-
-| **Railway** | Included in $5 plan | Simplest if using Railway compute |
-
-| **PlanetScale** | — | MySQL only, won't work |
-
-
-
-### Start command for production
-
-
-
-```bash
-
-cd api && gunicorn main:app -k uvicorn.workers.UvicornWorker -w 2 --bind 0.0.0.0:$PORT
-
+## Agentic AI Pipeline
+
+Coviction operates as a **multi-agent system** where autonomous services react to user input in real time:
+
+### 1. Entity Extraction Agent
+Fires as a background task on every observation. Uses `instructor` for structured LLM output with Pydantic validation:
+
+```python
+# Structured output schema — LLM must conform to this contract
+class ExtractedEntity(BaseModel):
+    name: str
+    entity_type: Literal["company", "person", "concept", "metric"]
+    sentiment: Literal["positive", "negative", "neutral"]
+    context_snippet: str
 ```
 
+- Extracts companies, people, concepts, and metrics from unstructured notes
+- Performs sentiment classification per-mention
+- Deduplicates against existing entity store (fuzzy match)
+- Creates co-occurrence edges automatically (same observation = linked)
 
-
-Or simpler:
-
-```bash
-
-cd api && uvicorn main:app --host 0.0.0.0 --port $PORT
-
-```
-
-
-
-### Production env vars
-
-
-
-```bash
-
-DATABASE_URL=postgresql+asyncpg://user:pass@host:5432/coviction
-
-OPENAI_API_KEY=sk-...
-
-JWT_SECRET=$(openssl rand -hex 32)
-
-DEBUG=False
-
-CORS_ORIGINS=https://your-domain.com
-
-DEFAULT_STRONG_MODEL=gpt-4o-mini
-
-DEFAULT_FAST_MODEL=gpt-4o-mini
+### 2. Conviction Engine
+A **time-decay Bayesian scoring system** that models belief strength:
 
 ```
+conviction_score = base_score × decay_factor(days_since_last_signal)
+```
 
+- Every reinforcing mention **compounds** the score upward
+- Silence **passively decays** conviction (configurable half-life)
+- Full immutable audit trail — every score change logged with trigger observation
+- Manual override with mandatory reasoning (VC can always pull rank)
 
+### 3. Heartbeat / Pattern Detection Agent
+Runs on-demand or as a scheduled morning brief:
 
-### What's NOT needed
+- Identifies trending entities (acceleration detection)
+- Surfaces high-conviction theses ready for action
+- Generates follow-up actions from accumulated context
+- Cross-session pattern recognition (repeated themes, evolving sentiment)
 
+### 4. RAG-Powered Conversational Agent
+Context-aware chat that retrieves from the user's full observation history:
 
+- Single-session mode: scoped to one demo day
+- Cross-session mode: pulls from 30 days of context
+- Observation-grounded answers with source attribution
+- System prompt enforces sharp, investor-grade tone
 
-- No Redis / message queue — uses FastAPI BackgroundTasks
+### 5. Deal Memo Generator
+One-click synthesis that pulls:
+- All mentions + sentiment breakdown
+- Current conviction score + thesis
+- Connected entities from knowledge graph
+- Raw observation snippets as evidence
 
-- No build step for frontend — static HTML served directly
-
-- No CDN — static files are <200KB total
-
-- No vector database — uses Postgres full-text search (GIN index)
-
-- No Celery / workers — fully async single process
-
-- No Docker required — single `uvicorn` process
-
-
+Produces a structured memo: Summary → Bull Case → Bear Case → Key Connections → Recommended Next Step.
 
 ---
 
+## Knowledge Graph Engine
 
+The knowledge graph is built automatically through co-occurrence analysis:
+
+- **Nodes**: Entities (companies, people, concepts, metrics) + virtual sector tag nodes
+- **Edges**: Weighted by co-occurrence frequency across observations
+- **Conviction overlay**: Node size/color driven by real-time conviction scores
+- **Force-directed visualization**: D3.js physics simulation with interactive exploration
+
+```sql
+-- Co-occurrence edge computation (real query from the codebase)
+SELECT a.entity_id AS source, b.entity_id AS target,
+       COUNT(DISTINCT a.observation_id) AS weight
+FROM entity_mentions a
+JOIN entity_mentions b ON a.observation_id = b.observation_id
+  AND a.entity_id < b.entity_id
+GROUP BY a.entity_id, b.entity_id
+ORDER BY weight DESC
+```
+
+---
 
 ## Tech Stack
 
-
-
-- **Backend**: FastAPI + SQLAlchemy 2.0 (async) + asyncpg
-
-- **Database**: PostgreSQL 16 (full-text search, JSONB, uuid-ossp)
-
-- **LLM**: OpenAI SDK + instructor (structured outputs)
-
-- **Frontend**: Vanilla HTML/CSS/JS (no framework, no build, no node_modules)
-
-- **Auth**: JWT (PyJWT) — configured but not enforced in demo mode
-
-- **Deployment**: Single uvicorn process, ~256MB RAM
-
-
+| Layer | Technology | Why |
+|-------|-----------|-----|
+| **Runtime** | Python 3.12 + FastAPI (async) | Native async/await, 10k+ req/s single process |
+| **Database** | PostgreSQL 16 + asyncpg | Full-text search (GIN), JSONB, UUID native, zero external deps |
+| **ORM** | SQLAlchemy 2.0 (async) | Type-safe queries, relationship loading, migration-ready |
+| **AI Framework** | OpenAI SDK + Instructor | Structured outputs with Pydantic validation, retry logic |
+| **Search** | PostgreSQL `ts_vector` + GIN index | No Elasticsearch needed — Postgres handles it natively |
+| **Frontend** | Vanilla HTML/CSS/JS | Zero build step, zero node_modules, PWA-capable, <200KB total |
+| **Auth** | JWT (PyJWT) | Stateless, configured for multi-tenant (demo mode bypasses) |
+| **Deployment** | Single uvicorn process | ~256MB RAM, no Redis, no Celery, no Docker required |
 
 ---
 
+## Features
 
+| Feature | Description |
+|---------|-------------|
+| **Quick Capture** | Title + notes + sector tags in <10 seconds. Voice memo transcription (Whisper). Image analysis (GPT-4V). |
+| **AI Daily Briefs** | One-tap synthesis → themes, standout signals, contradictions, follow-up actions |
+| **Knowledge Graph** | Auto-extracted entities linked by co-occurrence. Force-directed interactive visualization. |
+| **Conviction Scores** | Time-decay belief system. Compounds on signal, decays on silence. Full audit trail. |
+| **Deal Memos** | One-click LLM-generated memos with bull/bear case, connections, and recommended action |
+| **Cross-Session RAG** | Ask questions across 30 days of observations with source attribution |
+| **Full-Text Search** | PostgreSQL GIN-indexed search across all text fields + ILIKE fallback |
+| **Morning Brief** | Pattern detection: trending entities, rising convictions, suggested actions |
+| **Action Tracker** | Auto-generated follow-ups from briefs + manual items. Priority and status tracking. |
+| **PWA + Offline** | Service worker caches app shell. Works on mobile between pitches. |
+| **Export** | JSON + CSV export per session for downstream analysis |
+
+---
+
+## Quick Start
+
+```bash
+# Clone
+git clone https://github.com/YOUR_USER/coviction.git && cd coviction
+
+# Environment
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r api/requirements.txt
+
+# Database (Docker one-liner)
+docker run -d --name coviction-pg \
+  -e POSTGRES_DB=coviction -e POSTGRES_USER=coviction \
+  -e POSTGRES_PASSWORD=dev_password -p 5432:5432 postgres:16
+
+# Configure
+cp api/.env.example api/.env  # Edit with your OpenAI key
+
+# Run
+cd api && uvicorn main:app --reload --port 8000
+```
+
+Open `http://localhost:8000` — landing page loads. Click **"Start Capturing"** to enter the app.
+
+API docs: `http://localhost:8000/docs`
+
+---
+
+## API Surface
+
+<details>
+<summary><strong>Full endpoint reference (21 routes)</strong></summary>
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/health` | Health check |
+| `GET` | `/sessions/` | List all sessions |
+| `POST` | `/sessions/today/quick` | Get/create today's session |
+| `PATCH` | `/sessions/{id}` | Rename session |
+| `POST` | `/sessions/{id}/observations` | Create observation |
+| `POST` | `/sessions/{id}/observations/media` | Create with voice/image upload |
+| `DELETE` | `/sessions/{id}/observations/{obs_id}` | Delete observation |
+| `POST` | `/sessions/{id}/daily-brief` | Generate AI brief |
+| `GET` | `/sessions/{id}/daily-brief` | Get latest brief |
+| `POST` | `/ask` | Context-aware chat |
+| `GET` | `/search?q=...` | Full-text search |
+| `GET` | `/sessions/{id}/export` | Export (JSON/CSV) |
+| `GET` | `/knowledge/entities` | List entities |
+| `GET` | `/knowledge/entities/{id}` | Entity detail + mentions |
+| `GET` | `/knowledge/convictions` | List convictions |
+| `GET` | `/knowledge/convictions/{id}` | Conviction + audit trail |
+| `POST` | `/knowledge/convictions` | Create thesis |
+| `PATCH` | `/knowledge/convictions/{id}/score` | Manual score adjust |
+| `GET` | `/knowledge/graph` | Full knowledge graph |
+| `GET` | `/knowledge/graph/timeline` | Session heatmap |
+| `POST` | `/knowledge/graph/deal-memo/{entity_id}` | Generate deal memo |
+| `GET` | `/knowledge/panel` | Aggregate knowledge panel |
+| `GET` | `/knowledge/morning-brief` | Morning brief + patterns |
+
+</details>
+
+---
+
+## Environment Variables
+
+<details>
+<summary><strong>Configuration reference</strong></summary>
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DATABASE_URL` | Yes | — | `postgresql+asyncpg://user:pass@host:5432/coviction` |
+| `OPENAI_API_KEY` | Yes | — | OpenAI API key (or compatible provider) |
+| `OPENAI_BASE_URL` | No | OpenAI direct | Override for Azure, Anyscale, local models |
+| `DEFAULT_STRONG_MODEL` | No | `gpt-4o-mini` | Brief generation, chat, deal memos |
+| `DEFAULT_FAST_MODEL` | No | `gpt-4o-mini` | Entity extraction, classification |
+| `DEFAULT_EMBEDDING_MODEL` | No | `text-embedding-3-small` | Future: semantic search |
+| `GENAI_CA_CERT` | No | — | Custom CA cert for enterprise proxy |
+| `JWT_SECRET` | No | dev default | **Must change in production** |
+| `WHISPER_MODEL` | No | `whisper-1` | Audio transcription |
+| `DEBUG` | No | `True` | SQL echo, verbose errors |
+| `CORS_ORIGINS` | No | `["*"]` | Restrict in production |
+
+</details>
+
+---
+
+## Graceful Degradation
+
+The system is designed to operate **with or without LLM access**:
+
+| Feature | With LLM | Without LLM |
+|---------|----------|-------------|
+| Observation capture | Full | Full |
+| Entity extraction | Auto (background agent) | Manual only |
+| Daily briefs | AI-generated | Unavailable |
+| Conviction scores | Auto-compound on signal | Manual adjustment only |
+| Search | Full | Full |
+| Knowledge graph | Full | Full (no new auto-edges) |
+| Deal memos | AI-generated | Unavailable |
+| Export | Full | Full |
+
+Core data capture and retrieval always works. AI features enhance but don't gate the workflow.
+
+---
+
+## Deployment
+
+**Single process. No infrastructure complexity.**
+
+```bash
+# Production start
+cd api && gunicorn main:app -k uvicorn.workers.UvicornWorker -w 2 --bind 0.0.0.0:$PORT
+```
+
+**What you DON'T need:**
+- No Redis / message queue — FastAPI `BackgroundTasks`
+- No Elasticsearch — PostgreSQL GIN indexes
+- No vector database — full-text search is sufficient for this scale
+- No Celery / worker processes — fully async single process
+- No Docker required — single `uvicorn` command
+- No CDN — static assets are <200KB
+- No build step — HTML served directly
+
+**Recommended hosting:** Railway ($5/mo with Postgres) or Render (free tier).
+
+---
+
+## Project Structure
+
+```
+coviction/
+├── api/
+│   ├── main.py                    # FastAPI app + static mount + lifespan
+│   ├── core/
+│   │   ├── auth.py                # User resolution (shared across all routers)
+│   │   ├── config.py              # Pydantic Settings (env → typed config)
+│   │   └── model_client.py        # Unified LLM client singleton
+│   ├── db/
+│   │   └── postgres.py            # SQLAlchemy async engine + session factory
+│   ├── models/
+│   │   └── tables.py              # 7 ORM models (User → ConvictionLog)
+│   ├── routers/
+│   │   ├── sessions.py            # Session + observation CRUD
+│   │   ├── brief.py               # AI brief generation
+│   │   ├── ask.py                 # RAG chat agent
+│   │   ├── search.py              # Full-text search (GIN + ILIKE)
+│   │   ├── entities.py            # Entity CRUD + knowledge panel
+│   │   ├── convictions.py         # Conviction scoring + audit
+│   │   ├── graph.py               # Knowledge graph + deal memos
+│   │   ├── export.py              # JSON/CSV export
+│   │   └── media.py               # File serving
+│   ├── services/
+│   │   ├── entity_extractor.py    # Autonomous NER agent
+│   │   ├── conviction_engine.py   # Bayesian decay scoring
+│   │   └── heartbeat.py           # Pattern detection + morning brief
+│   ├── schemas/
+│   │   ├── session.py             # Request/response models
+│   │   └── knowledge.py           # Entity/conviction schemas
+│   └── requirements.txt
+├── static/
+│   ├── index.html                 # Marketing landing page
+│   ├── coviction-app.html         # Main application UI
+│   ├── coviction-memory.html      # Knowledge graph visualization
+│   ├── manifest.json              # PWA manifest
+│   └── sw.js                      # Service worker (offline support)
+├── infra/
+│   └── init.sql                   # Full schema + indexes + seed
+├── migrate.sql                    # Idempotent migrations
+└── uploads/                       # Local media storage
+```
+
+---
 
 ## License
 
-
-
 MIT
+
+---
+
+<p align="center">
+  <em>Built for investors who think in theses, not spreadsheets.</em>
+</p>
