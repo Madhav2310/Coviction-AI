@@ -13,10 +13,11 @@ from datetime import date, datetime, timezone
 from tempfile import SpooledTemporaryFile
 
 from uuid import UUID
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Header, UploadFile, File, Form
 
 from pydantic import BaseModel, Field
 
@@ -45,6 +46,7 @@ from schemas.session import (
 from core.model_client import get_model_client
 
 from core.auth import ensure_demo_user
+from core.config import get_settings
 
 
 
@@ -57,6 +59,19 @@ router = APIRouter(prefix="/sessions", tags=["sessions"])
 def _format_date(d: date) -> str:
 
     return d.strftime("%B %d, %Y")  # "April 12, 2026"
+
+
+def _today_in_timezone(timezone_name: str | None = None) -> date:
+    """Return the user's business day, independent of server host timezone."""
+    timezone_name = timezone_name or get_settings().app_timezone
+    try:
+        tz = ZoneInfo(timezone_name)
+    except ZoneInfoNotFoundError:
+        try:
+            tz = ZoneInfo(get_settings().app_timezone)
+        except ZoneInfoNotFoundError:
+            tz = ZoneInfo("UTC")
+    return datetime.now(tz).date()
 
 
 
@@ -274,13 +289,16 @@ async def get_session(
 
 @router.post("/today")
 
-async def get_or_create_today(db: AsyncSession = Depends(get_db)):
+async def get_or_create_today(
+    db: AsyncSession = Depends(get_db),
+    timezone_name: str | None = Header(default=None, alias="X-Coviction-Timezone"),
+):
 
     """Get or create today's session for the demo user."""
 
     user = await ensure_demo_user(db)
 
-    today = date.today()
+    today = _today_in_timezone(timezone_name)
 
 
 
@@ -828,6 +846,8 @@ async def quick_capture(
 
     db: AsyncSession = Depends(get_db),
 
+    timezone_name: str | None = Header(default=None, alias="X-Coviction-Timezone"),
+
 ):
 
     """Single-field quick capture. Saves instantly, enriches with AI in background.
@@ -844,7 +864,7 @@ async def quick_capture(
 
     user = await ensure_demo_user(db)
 
-    today = date.today()
+    today = _today_in_timezone(timezone_name)
 
 
 

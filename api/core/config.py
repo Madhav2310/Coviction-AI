@@ -90,6 +90,8 @@ class Settings(BaseSettings):
 
     debug: bool = Field(default=True)
 
+    app_timezone: str = Field(default="Asia/Kolkata")
+
     cors_origins: list[str] = Field(default=["http://localhost:3000", "http://localhost:8000", "http://localhost:8081", "http://127.0.0.1:5500", "null", "*"])
 
 

@@ -2973,6 +2973,8 @@ let todaySessionId = null;
 
 let sessionDate = null;
 
+let clientTodayDate = null;
+
 let observations = [];
 
 let brief = null;
@@ -3069,6 +3071,27 @@ function formatTime(iso) { return new Date(iso).toLocaleTimeString([], { hour: '
 
 function formatDate(d) { return new Date(d + 'T12:00:00').toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }); }
 
+function localDateKey() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function browserTimezone() {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+  } catch {
+    return '';
+  }
+}
+
+function timezoneHeaders(extra = {}) {
+  const tz = browserTimezone();
+  return tz ? { ...extra, 'X-Coviction-Timezone': tz } : extra;
+}
+
 function tagClass(t) { return SECTORS.includes(t) ? t : 'default'; }
 
 function tagPill(t) { return `<span class="note-tag ${tagClass(t)}">${t}</span>`; }
@@ -3087,7 +3110,10 @@ async function boot() {
 
   try {
 
-    const res = await fetch(`${API}/sessions/today`, { method: 'POST' });
+    const res = await fetch(`${API}/sessions/today`, {
+      method: 'POST',
+      headers: timezoneHeaders()
+    });
 
     const data = await res.json();
 
@@ -3096,6 +3122,8 @@ async function boot() {
     todaySessionId = data.id;
 
     sessionDate = data.session_date;
+
+    clientTodayDate = localDateKey();
 
     observations = data.observations || [];
 
@@ -3121,6 +3149,22 @@ async function boot() {
 
   fetchSessionList();
 
+}
+
+async function refreshTodayIfDateChanged() {
+  const today = localDateKey();
+  if (!clientTodayDate) {
+    clientTodayDate = today;
+    return;
+  }
+  if (clientTodayDate && clientTodayDate === today) return;
+
+  const wasOnToday = !todaySessionId || sessionId === todaySessionId;
+  await boot();
+  if (wasOnToday) {
+    currentView = 'notes';
+    renderSidebarView();
+  }
 }
 
 
@@ -4063,7 +4107,7 @@ async function submitQuickCapture() {
 
       method: 'POST',
 
-      headers: { 'Content-Type': 'application/json' },
+      headers: timezoneHeaders({ 'Content-Type': 'application/json' }),
 
       body: JSON.stringify({ text })
 
@@ -5774,6 +5818,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Boot
 
   boot();
+
+  setInterval(refreshTodayIfDateChanged, 60000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshTodayIfDateChanged();
+  });
 
 });
 
