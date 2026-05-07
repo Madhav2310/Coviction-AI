@@ -8,6 +8,8 @@ This project deploys as one FastAPI web service. The API and frontend run from t
 
 For the MVP, use Render for the web service and Neon for Postgres.
 
+The repo pins Render to Python 3.13 with `.python-version`. Do not deploy this app on Python 3.14 with the current dependency pins.
+
 ## 1. Create the Postgres database on Neon
 
 1. Go to https://neon.com
@@ -70,6 +72,12 @@ CORS_ORIGINS=["https://coviction-ai.onrender.com"]
 ```
 
 Use your actual Render service URL for `CORS_ORIGINS` after Render shows it. If you rename the service, the URL may differ.
+
+If Render still tries to build with Python 3.14, add this environment variable too:
+
+```env
+PYTHON_VERSION=3.13.13
+```
 
 ## 4. Deploy and verify
 
