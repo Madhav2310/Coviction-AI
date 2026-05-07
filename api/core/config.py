@@ -60,9 +60,11 @@ class Settings(BaseSettings):
 
     openai_base_url: Optional[str] = Field(default=None, description="Override for proxied OpenAI")
 
-    default_strong_model: str = Field(default="gpt-5.4-mini")
+    default_strong_model: str = Field(default="gpt-4o-mini")
 
-    default_fast_model: str = Field(default="gpt-5.4-mini")
+    default_fast_model: str = Field(default="gpt-4o-mini")
+
+    entity_extraction_model: str = Field(default="gpt-4o-mini")
 
     default_embedding_model: str = Field(default="text-embedding-3-small")
 

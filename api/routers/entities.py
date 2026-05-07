@@ -12,7 +12,7 @@ from typing import Optional
 
 
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 
 from sqlalchemy import select, func, case
 
@@ -24,7 +24,7 @@ from sqlalchemy.orm import selectinload
 
 from db.postgres import get_db
 
-from models.tables import Entity, EntityMention, Observation
+from models.tables import DailySession, Entity, EntityMention, Observation
 
 from schemas.knowledge import EntityDetail, EntityListItem, MentionOut
 
@@ -78,7 +78,7 @@ async def list_entities(
 
         .outerjoin(EntityMention, Entity.id == EntityMention.entity_id)
 
-        .where(Entity.user_id == user_id)
+        .where(Entity.user_id == user_id, Entity.mention_count > 0)
 
         .group_by(Entity.id)
 
@@ -160,6 +160,58 @@ async def list_entities(
 
 
 
+
+
+@router.post("/entities/reprocess/{observation_id}")
+async def reprocess_observation_entities(
+    observation_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    """Clear and rebuild extracted entities for one owned observation."""
+    user_id = await get_user_id(db)
+
+    obs_result = await db.execute(
+        select(Observation)
+        .join(DailySession, Observation.session_id == DailySession.id)
+        .where(
+            Observation.id == observation_id,
+            DailySession.user_id == user_id,
+        )
+    )
+    obs = obs_result.scalar_one_or_none()
+    if not obs:
+        raise HTTPException(status_code=404, detail="Observation not found")
+
+    from services.entity_extractor import reprocess_observation
+
+    entities = await reprocess_observation(observation_id, user_id, db)
+    return {
+        "status": "reprocessed",
+        "observation_id": str(observation_id),
+        "entities": [entity.name for entity in entities],
+    }
+
+
+@router.post("/entities/repair-counts")
+async def repair_all_entity_counts(
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    """Rebuild stored entity mention counts from actual mention rows."""
+    user_id = await get_user_id(db)
+    background_tasks.add_task(_repair_entity_counts_background, user_id)
+    return {
+        "status": "repair_started",
+        "message": "Entity count repair is running in the background.",
+    }
+
+
+async def _repair_entity_counts_background(user_id: UUID):
+    from db.postgres import async_session_factory
+    from services.entity_extractor import repair_entity_counts
+
+    async with async_session_factory() as session:
+        await repair_entity_counts(user_id, session)
 
 
 @router.get("/entities/{entity_id}")
@@ -418,7 +470,7 @@ async def get_knowledge_panel(
 
         select(Entity)
 
-        .where(Entity.user_id == user_id)
+        .where(Entity.user_id == user_id, Entity.mention_count > 0)
 
         .order_by(Entity.mention_count.desc())
 
@@ -528,7 +580,7 @@ async def get_knowledge_panel(
 
     ent_count_res = await db.execute(
 
-        select(func.count(Entity.id)).where(Entity.user_id == user_id)
+        select(func.count(Entity.id)).where(Entity.user_id == user_id, Entity.mention_count > 0)
 
     )
 

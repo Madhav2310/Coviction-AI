@@ -462,6 +462,8 @@ async def edit_observation(
 
     body: ObservationUpdate,
 
+    background_tasks: BackgroundTasks,
+
     db: AsyncSession = Depends(get_db),
 
 ):
@@ -488,6 +490,8 @@ async def edit_observation(
 
 
 
+    reprocess_fields = {"title", "body", "voice_transcript", "image_summary", "sector_tags"}
+    before_values = {field: getattr(obs, field, None) for field in reprocess_fields}
     update_data = body.model_dump(exclude_unset=True)
 
     for field, value in update_data.items():
@@ -514,6 +518,13 @@ async def edit_observation(
 
     await db.refresh(obs)
 
+    content_changed = any(
+        field in update_data and before_values.get(field) != getattr(obs, field, None)
+        for field in reprocess_fields
+    )
+    if content_changed and sess:
+        background_tasks.add_task(_reprocess_entities_background, obs.id, sess.user_id)
+
     return ObservationOut.model_validate(obs).model_dump(mode="json")
 
 
@@ -537,6 +548,8 @@ async def delete_observation(
 ):
 
     """Delete an observation. Hard delete — the frontend handles undo timing."""
+    from models.tables import EntityMention
+    from services.entity_extractor import repair_entity_counts_for_ids
 
     result = await db.execute(
 
@@ -558,7 +571,16 @@ async def delete_observation(
 
 
 
+    mentions_result = await db.execute(
+        select(EntityMention.entity_id).where(EntityMention.observation_id == obs_id)
+    )
+    affected_entity_ids = {row[0] for row in mentions_result.all()}
+
     await db.delete(obs)
+    await db.flush()
+
+    if affected_entity_ids:
+        await repair_entity_counts_for_ids(affected_entity_ids, db)
 
 
 
@@ -732,13 +754,8 @@ async def _extract_entities_background(obs_id: UUID, user_id: UUID):
 
 
 
-            # Skip entity extraction for personal notes (non-VC content creates noise)
-
             tags = obs.sector_tags if isinstance(obs.sector_tags, list) else []
-
-            if tags == ["personal"]:
-
-                return
+            is_personal = tags == ["personal"]
 
 
 
@@ -762,11 +779,11 @@ async def _extract_entities_background(obs_id: UUID, user_id: UUID):
 
                         EntityMention.observation_id == obs_id,
 
-                    )
+                    ).limit(1)
 
                 )
 
-                mention = m_result.scalar_one_or_none()
+                mention = m_result.scalars().first()
 
                 sentiment = mention.sentiment if mention else "neutral"
 
@@ -774,15 +791,27 @@ async def _extract_entities_background(obs_id: UUID, user_id: UUID):
 
 
 
-            # Update convictions
-
-            await process_conviction_updates(entity_sentiments, obs, user_id, db)
+            # Personal/admin notes can contain real people, but should not move convictions.
+            if not is_personal:
+                await process_conviction_updates(entity_sentiments, obs, user_id, db)
 
             await db.commit()
 
     except Exception as e:
 
         print(f"Entity extraction background task failed for obs {obs_id}: {e}")
+
+
+async def _reprocess_entities_background(obs_id: UUID, user_id: UUID):
+    """Background task: clear and rebuild extracted entities for an observation."""
+    from db.postgres import async_session_factory
+    from services.entity_extractor import reprocess_observation
+
+    try:
+        async with async_session_factory() as db:
+            await reprocess_observation(obs_id, user_id, db)
+    except Exception as e:
+        print(f"Entity reprocess background task failed for obs {obs_id}: {e}")
 
 
 
