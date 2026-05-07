@@ -1,0 +1,13 @@
+.git
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.log
+.DS_Store
+api/.env
+.env
+projext.txt
+predeployment.txt
+uploads/*
+!uploads/.gitkeep

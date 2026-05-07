@@ -6,9 +6,9 @@ This project deploys as one FastAPI web service. The API and frontend run from t
 - Frontend: `/app/`
 - Health check: `/health`
 
-For the MVP, use Render for the web service and Neon for Postgres.
+For the MVP, use Northflank for the web service and Neon for Postgres.
 
-The repo pins Render to Python 3.13 with `.python-version`. Do not deploy this app on Python 3.14 with the current dependency pins.
+The repo includes a Dockerfile using Python 3.13. Do not deploy this app on Python 3.14 with the current dependency pins.
 
 ## 1. Create the Postgres database on Neon
 
@@ -34,9 +34,76 @@ becomes:
 postgresql+asyncpg://USER:PASSWORD@HOST/DB?ssl=require
 ```
 
-Keep this value ready for Render as `DATABASE_URL`.
+Keep this value ready for Northflank as `DATABASE_URL`.
 
-## 2. Create the Render web service
+## 2. Create the Northflank web service
+
+1. Go to https://app.northflank.com
+2. Sign up or log in.
+3. Click **Create project**.
+4. Use project name: `coviction-ai`
+5. Open the project.
+6. Click **Create new**.
+7. Click **Service**.
+8. Choose **Deploy from Git repository**.
+9. Connect GitHub if prompted.
+10. Select `Madhav2310/Coviction-AI`.
+11. For build method, choose **Dockerfile**.
+12. Use:
+    - Dockerfile path: `/Dockerfile`
+    - Branch: `main`
+    - Port: `8000`
+    - Service name: `coviction-ai`
+13. Choose the free Sandbox service if available.
+
+## 3. Add Northflank environment variables
+
+In the Northflank service:
+
+1. Open **Environment** or **Variables**.
+2. Add:
+
+```env
+DATABASE_URL=postgresql+asyncpg://USER:PASSWORD@HOST/DB?ssl=require
+OPENAI_API_KEY=your_openai_key
+DEFAULT_STRONG_MODEL=gpt-4o-mini
+DEFAULT_FAST_MODEL=gpt-4o-mini
+DEBUG=False
+JWT_SECRET=replace_with_a_long_random_secret
+DB_POOL_SIZE=3
+DB_MAX_OVERFLOW=2
+CORS_ORIGINS=["https://YOUR_NORTHFLANK_DOMAIN"]
+```
+
+Use the public Northflank service domain for `CORS_ORIGINS` after Northflank shows it.
+
+## 4. Deploy and verify
+
+1. Trigger a deploy from the service dashboard if it does not start automatically.
+2. Wait for the build and container rollout to finish.
+3. Open:
+
+```text
+https://YOUR_NORTHFLANK_DOMAIN/health
+```
+
+Expected:
+
+```json
+{"status":"ok","service":"coviction-api"}
+```
+
+4. Open:
+
+```text
+https://YOUR_NORTHFLANK_DOMAIN/app/
+```
+
+The app should load and create the demo user automatically on startup.
+
+## Render fallback
+
+If you still want to deploy on Render:
 
 1. Go to https://dashboard.render.com
 2. Click **New**.
