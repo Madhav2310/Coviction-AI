@@ -19,6 +19,7 @@ from fastapi.responses import RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 import os
+import uuid
 from sqlalchemy import text
 
 
@@ -56,10 +57,10 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.create_all)
         await conn.execute(
             text(
-                "INSERT INTO users (email) VALUES (:email) "
+                "INSERT INTO users (id, email) VALUES (:id, :email) "
                 "ON CONFLICT (email) DO NOTHING"
             ),
-            {"email": "demo@coviction.ai"},
+            {"id": uuid.uuid4(), "email": "demo@coviction.ai"},
         )
 
     print("Database tables created/verified and demo user seeded")
