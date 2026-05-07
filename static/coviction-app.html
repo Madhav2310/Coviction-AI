@@ -580,11 +580,14 @@
 
     }
 
-    .ce-tag-row .note-tag{cursor:pointer;opacity:0.45;border:1.5px solid transparent;transition:opacity 0.15s,border-color 0.15s}
+    .ce-tag-row .note-tag,
+    .edit-tag-row .note-tag{cursor:pointer;opacity:0.45;border:1.5px solid transparent;transition:opacity 0.15s,border-color 0.15s}
 
-    .ce-tag-row .note-tag:hover{opacity:0.7}
+    .ce-tag-row .note-tag:hover,
+    .edit-tag-row .note-tag:hover{opacity:0.7}
 
-    .ce-tag-row .note-tag.on{opacity:1;border-color:currentColor}
+    .ce-tag-row .note-tag.on,
+    .edit-tag-row .note-tag.on{opacity:1;border-color:currentColor}
 
     .note-tag.fintech{background:var(--tag-fintech-bg);color:var(--tag-fintech)}
 
@@ -3472,6 +3475,8 @@ function showNoteDetail(id) {
 
   const tags = getObsTags(obs);
 
+  $('noteDetailTags').classList.remove('edit-tag-row');
+
   $('noteDetailTags').innerHTML = tags.map(t => tagPill(t)).join('');
 
   $('noteDetailTitle').textContent = obs.title || 'Untitled';
@@ -3564,6 +3569,8 @@ function enterEditMode() {
 
   }).join('');
 
+  $('noteDetailTags').classList.add('edit-tag-row');
+
   $('noteDetailTags').innerHTML = tagHtml;
 
 
@@ -3647,6 +3654,8 @@ function cancelEdit() {
   if (!selectedObs) return;
 
   editMode = false;
+
+  $('noteDetailTags').classList.remove('edit-tag-row');
 
   showNoteDetail(selectedObs.id);
 

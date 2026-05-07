@@ -680,7 +680,8 @@ async def _enrich_observation(obs_id: UUID, text: str, user_id: UUID):
 
                 f"1. A concise title (company name or key topic, <10 words)\n"
 
-                f"2. Sector tags (1-3 from: fintech, ai, saas, health, crypto, climate, infra, devtools, enterprise, consumer)\n\n"
+                f"2. Sector tags (1-3 from: fintech, ai, saas, health, crypto, climate, infra, devtools, personal, enterprise, consumer)\n"
+                f"Use personal for notes about talking to, meeting, calling, getting review from, or following up with a named person, unless the note is clearly about a company or sector.\n\n"
 
                 f'Note: "{text}"'
 
